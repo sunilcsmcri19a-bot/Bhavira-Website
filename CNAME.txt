@@ -1,0 +1,10 @@
+HOW TO USE A CUSTOM DOMAIN
+--------------------------
+When you connect your Bluehost domain, GitHub Pages will create a file
+called "CNAME" (no extension) containing just your domain, e.g.:
+
+    bhavira.tech
+
+You don't need to make this by hand — GitHub creates it automatically
+when you enter your domain under Settings -> Pages -> Custom domain.
+Delete this CNAME.txt note once you're set up.

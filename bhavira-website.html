@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Bhavira Technologies — Recovering metal from solution</title>
+<style>
+  :root{
+    --graphite:#15130f;     /* electrode body */
+    --graphite2:#1d1a15;
+    --carbon:#0c0b09;
+    --zinc:#c8cdd4;         /* recovered metal */
+    --zinc-bright:#e8ecf1;
+    --copper:#b06a3e;       /* warm recovered-metal tone */
+    --copper-bright:#d4895c;
+    --current:#9ef01a;      /* electric current accent — used sparingly */
+    --paper:#ece6da;
+    --paper-dim:#a39a88;
+    --line:#34302a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--graphite);color:var(--paper);
+    font-family:'Newsreader',Georgia,serif;-webkit-font-smoothing:antialiased;
+    overflow-x:hidden}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace}
+
+  /* ---- nav ---- */
+  nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;justify-content:space-between;
+    align-items:center;padding:18px 32px;background:rgba(21,19,15,0.72);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  .brand{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;letter-spacing:1px;color:var(--paper)}
+  .brand b{color:var(--current)}
+  nav .links{display:flex;gap:26px}
+  nav a{color:var(--paper-dim);text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:12px;
+    letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+  nav a:hover{color:var(--paper)}
+  @media(max-width:680px){nav .links{display:none}nav{padding:16px 20px}}
+
+  /* ---- hero ---- */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+  #cryst{position:absolute;inset:0;width:100%;height:100%;z-index:1;opacity:0.9}
+  .hero-grad{position:absolute;inset:0;z-index:2;
+    background:radial-gradient(120% 90% at 70% 40%,rgba(21,19,15,0) 0%,rgba(21,19,15,0.55) 60%,var(--graphite) 100%)}
+  .hero-inner{position:relative;z-index:3;max-width:1180px;margin:0 auto;padding:0 32px;width:100%}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:4px;text-transform:uppercase;
+    color:var(--current);margin-bottom:24px;opacity:0;animation:rise .9s .2s forwards}
+  h1{font-size:clamp(38px,7vw,82px);line-height:0.98;font-weight:500;letter-spacing:-1.5px;max-width:14ch}
+  h1 .em{font-style:italic;color:var(--copper-bright)}
+  h1 .line{display:block;opacity:0;animation:rise 1s forwards}
+  h1 .line:nth-child(1){animation-delay:.35s}
+  h1 .line:nth-child(2){animation-delay:.5s}
+  h1 .line:nth-child(3){animation-delay:.65s}
+  .sub{margin-top:30px;font-size:clamp(16px,2vw,20px);color:var(--paper-dim);max-width:50ch;line-height:1.5;
+    font-family:'Newsreader',serif;opacity:0;animation:rise 1s .85s forwards}
+  .hero-cta{margin-top:38px;display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:rise 1s 1s forwards}
+  .btn{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:1px;text-transform:uppercase;
+    padding:14px 26px;text-decoration:none;border:1px solid var(--line);color:var(--paper);transition:all .2s;cursor:pointer}
+  .btn.solid{background:var(--current);color:var(--carbon);border-color:var(--current);font-weight:600}
+  .btn.solid:hover{background:var(--zinc-bright);border-color:var(--zinc-bright)}
+  .btn:hover{border-color:var(--paper)}
+  @keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+  /* scroll cue */
+  .cue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--paper-dim);
+    text-transform:uppercase;opacity:0;animation:rise 1s 1.3s forwards}
+  .cue::after{content:"";display:block;width:1px;height:34px;background:linear-gradient(var(--paper-dim),transparent);
+    margin:10px auto 0;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+  /* ---- section frame ---- */
+  section.band{position:relative;z-index:4;background:var(--graphite);padding:110px 32px;border-top:1px solid var(--line)}
+  .wrap{max-width:1180px;margin:0 auto}
+  .seclabel{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;
+    color:var(--copper-bright);margin-bottom:18px;display:flex;align-items:center;gap:12px}
+  .seclabel::before{content:"";width:30px;height:1px;background:var(--copper)}
+  h2{font-size:clamp(28px,4vw,46px);font-weight:500;line-height:1.05;letter-spacing:-0.8px;max-width:18ch}
+  h2 .em{font-style:italic;color:var(--zinc-bright)}
+  .lead{margin-top:22px;font-size:clamp(17px,2vw,21px);line-height:1.55;color:var(--paper-dim);max-width:62ch}
+
+  /* problem→solution split */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:64px;border:1px solid var(--line)}
+  @media(max-width:760px){.split{grid-template-columns:1fr}}
+  .split>div{padding:38px}
+  .split .prob{background:var(--graphite2)}
+  .split .sol{background:linear-gradient(160deg,rgba(158,240,26,0.06),transparent)}
+  .split h3{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;margin-bottom:18px}
+  .split .prob h3{color:var(--copper-bright)}
+  .split .sol h3{color:var(--current)}
+  .split p{font-size:17px;line-height:1.6;color:var(--paper);opacity:.9}
+  .split p+p{margin-top:14px}
+
+  /* attributes grid */
+  .attrs{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin-top:64px}
+  @media(max-width:760px){.attrs{grid-template-columns:1fr}}
+  .attr{background:var(--graphite);padding:30px}
+  .attr .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--paper-dim);margin-bottom:14px}
+  .attr h4{font-size:20px;font-weight:500;margin-bottom:8px;color:var(--zinc-bright)}
+  .attr p{font-size:14.5px;line-height:1.55;color:var(--paper-dim)}
+
+  /* data strip */
+  .data{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin-top:64px}
+  @media(max-width:680px){.data{grid-template-columns:repeat(2,1fr)}}
+  .dcell{background:var(--carbon);padding:26px 22px}
+  .dcell .v{font-family:'IBM Plex Mono',monospace;font-size:30px;color:var(--current);letter-spacing:-1px}
+  .dcell .v small{font-size:14px;color:var(--paper-dim)}
+  .dcell .k{font-size:13px;color:var(--paper-dim);margin-top:8px;line-height:1.4}
+
+  /* timeline */
+  .tl{margin-top:60px;border-left:1px solid var(--line);padding-left:0}
+  .tl .row{display:grid;grid-template-columns:120px 1fr;gap:24px;padding:22px 0 22px 28px;position:relative;
+    border-bottom:1px solid var(--line)}
+  @media(max-width:600px){.tl .row{grid-template-columns:1fr;gap:6px}}
+  .tl .row::before{content:"";position:absolute;left:-5px;top:30px;width:9px;height:9px;border-radius:50%;
+    background:var(--copper-bright);box-shadow:0 0 0 4px var(--graphite)}
+  .tl .row.live::before{background:var(--current);animation:glow 1.8s infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 4px var(--graphite),0 0 0 5px rgba(158,240,26,.4)}50%{box-shadow:0 0 0 4px var(--graphite),0 0 10px 5px rgba(158,240,26,.25)}}
+  .tl .when{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--copper-bright);letter-spacing:1px;padding-top:2px}
+  .tl .row.live .when{color:var(--current)}
+  .tl .what{font-size:18px;line-height:1.4;color:var(--paper)}
+  .tl .what span{display:block;font-size:14px;color:var(--paper-dim);margin-top:5px;font-family:'Newsreader',serif}
+
+  /* applications */
+  .apps{display:flex;flex-wrap:wrap;gap:10px;margin-top:40px}
+  .chip{font-family:'IBM Plex Mono',monospace;font-size:13px;padding:9px 16px;border:1px solid var(--line);
+    color:var(--paper-dim);transition:all .2s}
+  .chip:hover{border-color:var(--copper);color:var(--copper-bright)}
+  .chip.hot{border-color:var(--current);color:var(--current)}
+
+  /* cta band */
+  .closing{background:linear-gradient(180deg,var(--graphite),var(--carbon));text-align:center}
+  .closing h2{margin:0 auto;max-width:20ch}
+  .closing .lead{margin:22px auto 0}
+  .closing .hero-cta{justify-content:center;animation:none;opacity:1;margin-top:40px}
+
+  /* footer */
+  footer{background:var(--carbon);border-top:1px solid var(--line);padding:46px 32px}
+  .foot{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--paper-dim)}
+  .foot a{color:var(--paper-dim);text-decoration:none}.foot a:hover{color:var(--current)}
+  .foot .col b{color:var(--paper);display:block;margin-bottom:10px;letter-spacing:1px}
+  .foot .col div{margin-bottom:6px}
+
+  /* metals grid */
+  .metalgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin-top:60px}
+  @media(max-width:760px){.metalgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.metalgrid{grid-template-columns:1fr}}
+  .metal-card{background:var(--graphite);padding:26px 24px;transition:background .3s;position:relative}
+  .metal-card:hover{background:var(--graphite2)}
+  .metal-card .sym{font-family:'IBM Plex Mono',monospace;font-size:34px;color:var(--zinc);letter-spacing:-1px;line-height:1}
+  .metal-card .mname{font-size:19px;margin-top:10px;color:var(--paper)}
+  .metal-card .mtag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--paper-dim);margin-top:8px}
+  .metal-card.hot .sym{color:var(--current)} .metal-card.hot .mtag{color:var(--current)}
+  .metal-card.precious .sym{color:var(--copper-bright)} .metal-card.precious .mtag{color:var(--copper-bright)}
+  .metal-card.crit .sym{color:var(--zinc-bright)}
+  .metal-card.hot::after{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:var(--current)}
+
+  /* mining section */
+  .minegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
+  @media(max-width:760px){.minegrid{grid-template-columns:1fr}}
+  .mine-item{border-top:1px solid var(--copper);padding-top:20px}
+  .mine-item .mhead{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--copper-bright);margin-bottom:14px}
+  .mine-item p{font-size:16px;line-height:1.6;color:var(--paper);opacity:.9}
+  .mine-cta{display:flex;justify-content:space-between;align-items:center;gap:30px;margin-top:54px;
+    padding:34px;border:1px solid var(--line);background:linear-gradient(160deg,rgba(158,240,26,0.06),transparent);flex-wrap:wrap}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important}
+    .eyebrow,h1 .line,.sub,.hero-cta,.cue{opacity:1}
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <div class="brand">BHAVIRA<b>·</b>TECH</div>
+  <div class="links">
+    <a href="#tech">Technology</a>
+    <a href="#proof">Proof</a>
+    <a href="#metals">Metals</a>
+    <a href="#mining">For Mining</a>
+    <a href="#journey">Journey</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <canvas id="cryst"></canvas>
+  <div class="hero-grad"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Advanced electrodes · Metal recovery</div>
+    <h1>
+      <span class="line">We pull metal</span>
+      <span class="line">back <span class="em">out of</span></span>
+      <span class="line">solution.</span>
+    </h1>
+    <p class="sub">Bhavira builds a low-cost, non-corrosive electrode that recovers valuable
+      metals from tailings, effluents and waste streams — turning what was discarded into resource.</p>
+    <div class="hero-cta">
+      <a href="#tech" class="btn solid">See the technology</a>
+      <a href="#contact" class="btn">Get in touch</a>
+    </div>
+  </div>
+  <div class="cue mono">Scroll</div>
+</header>
+
+<!-- WHAT WE DO -->
+<section class="band" id="tech">
+  <div class="wrap">
+    <div class="seclabel">What we do</div>
+    <h2>A cheaper electrode for <span class="em">electrowinning</span> — the process that wins metal from liquid.</h2>
+    <p class="lead">Most metal recovery runs on expensive metal cathodes that pit and corrode in harsh,
+      impurity-laden solutions. Our Plastic Chip Electrode is a graphite-polymer composite: simple to make,
+      chemically tough, and built to carry high current. It does the same job for a fraction of the electrode cost.</p>
+
+    <div class="split">
+      <div class="prob">
+        <h3>The problem today</h3>
+        <p>Conventional cathodes are costly, pit and corrode in acid, and need labour-intensive stripping to
+          harvest the metal.</p>
+        <p>That means replacement cost, downtime, and lost efficiency — every cycle.</p>
+      </div>
+      <div class="sol">
+        <h3>Our electrode</h3>
+        <p>A solution-cast composite that resists corrosion, sustains high current density, and releases its
+          deposit by gravity.</p>
+        <p>Lower cost, longer life, and metal recovered from streams others treat as waste.</p>
+      </div>
+    </div>
+
+    <div class="attrs">
+      <div class="attr"><div class="n mono">01</div><h4>Low cost</h4><p>Graphite and polymer, solution-cast — no machining, no precious metals in the electrode itself.</p></div>
+      <div class="attr"><div class="n mono">02</div><h4>Non-corrosive</h4><p>Stable in strong acid where metal cathodes pit and fail.</p></div>
+      <div class="attr"><div class="n mono">03</div><h4>High current</h4><p>Compact, pit-less structure carries the current densities a real operation needs.</p></div>
+      <div class="attr"><div class="n mono">04</div><h4>Self-harvesting</h4><p>Recovered metal releases by gravity — less stripping, less downtime.</p></div>
+      <div class="attr"><div class="n mono">05</div><h4>Broad use</h4><p>Zinc, cadmium, manganese, precious metals — and recovery from tailings and e-waste.</p></div>
+      <div class="attr"><div class="n mono">06</div><h4>Patent filed</h4><p>The technology is protected; the science is published and peer-reviewed.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section class="band" id="proof">
+  <div class="wrap">
+    <div class="seclabel">Proven in the lab</div>
+    <h2>The numbers behind the <span class="em">electrode</span>.</h2>
+    <p class="lead">Performance for zinc recovery from acidic sulfate solution, measured and published.
+      These are real results, not projections.</p>
+    <div class="data">
+      <div class="dcell"><div class="v">91.9<small>%</small></div><div class="k">current efficiency with additive</div></div>
+      <div class="dcell"><div class="v">500<small> mA/cm²</small></div><div class="k">stable high current density</div></div>
+      <div class="dcell"><div class="v">5.1<small>×</small></div><div class="k">active area vs geometric</div></div>
+      <div class="dcell"><div class="v">~10<small> min</small></div><div class="k">to self-release the deposit</div></div>
+    </div>
+    <p class="lead" style="margin-top:28px;font-size:14px;" class="mono">
+      Based on peer-reviewed results for the Plastic Chip Electrode (Parmar, Chaudhari &amp; Srivastava,
+      J. Indian Chem. Soc. 98, 2021).</p>
+  </div>
+</section>
+
+<!-- METALS -->
+<section class="band" id="metals">
+  <div class="wrap">
+    <div class="seclabel">Metals we target</div>
+    <h2>One electrode, <span class="em">many metals</span>.</h2>
+    <p class="lead">The same platform recovers a wide range of metals from solution — from base and battery metals
+      to precious and critical minerals. Zinc is lab-proven today; the others are the recovery roadmap.</p>
+    <div class="metalgrid">
+      <div class="metal-card hot"><div class="sym">Zn</div><div class="mname">Zinc</div><div class="mtag">lab-proven</div></div>
+      <div class="metal-card"><div class="sym">Cd</div><div class="mname">Cadmium</div><div class="mtag">recoverable</div></div>
+      <div class="metal-card"><div class="sym">Mn</div><div class="mname">Manganese</div><div class="mtag">recoverable</div></div>
+      <div class="metal-card"><div class="sym">Cu</div><div class="mname">Copper</div><div class="mtag">recoverable</div></div>
+      <div class="metal-card"><div class="sym">Ni</div><div class="mname">Nickel</div><div class="mtag">recoverable</div></div>
+      <div class="metal-card"><div class="sym">Co</div><div class="mname">Cobalt</div><div class="mtag">battery metal</div></div>
+      <div class="metal-card precious"><div class="sym">Au</div><div class="mname">Gold</div><div class="mtag">high value</div></div>
+      <div class="metal-card precious"><div class="sym">Ag</div><div class="mname">Silver</div><div class="mtag">high value</div></div>
+      <div class="metal-card crit"><div class="sym">Ga</div><div class="mname">Gallium</div><div class="mtag">critical mineral</div></div>
+    </div>
+    <p class="lead" style="margin-top:26px;font-size:14px">
+      Recovered from leach solutions, tailings, effluents and e-waste streams. Suitability depends on solution
+      chemistry — we confirm each metal in pilot testing.</p>
+  </div>
+</section>
+
+<!-- FOR MINING -->
+<section class="band" id="mining">
+  <div class="wrap">
+    <div class="seclabel">For the mining industry</div>
+    <h2>Turning <span class="em">tailings</span> from liability into resource.</h2>
+    <p class="lead">Every tailings dam and waste stream still holds metal — often critical minerals the world now
+      urgently needs. Conventional recovery is too costly to justify on dilute, dirty streams. A low-cost,
+      corrosion-resistant electrode changes that economics.</p>
+
+    <div class="minegrid">
+      <div class="mine-item">
+        <div class="mhead mono">The gap</div>
+        <p>Valuable and critical metals sit locked in tailings and effluents because existing electrodes are too
+          expensive and corrode too fast to recover them economically.</p>
+      </div>
+      <div class="mine-item">
+        <div class="mhead mono">What we offer</div>
+        <p>A cheaper, durable cathode that makes recovery from low-grade and secondary streams viable — extra
+          revenue and reduced waste from assets you already hold.</p>
+      </div>
+      <div class="mine-item">
+        <div class="mhead mono">Why now</div>
+        <p>Critical-mineral demand and circular-economy pressure are reshaping mining. Recovering metal from
+          waste is moving from cost centre to opportunity.</p>
+      </div>
+    </div>
+
+    <div class="mine-cta">
+      <div>
+        <div class="mono" style="color:var(--current);font-size:13px;letter-spacing:2px;margin-bottom:10px">PILOT-READY</div>
+        <p style="font-size:19px;line-height:1.5;color:var(--paper);max-width:54ch">We're seeking mining and
+          processing partners to run a pilot on a real feed — and prove the recovery, energy and cost numbers on
+          your stream.</p>
+      </div>
+      <a href="#contact" class="btn solid" style="white-space:nowrap">Discuss a pilot</a>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="band" id="journey">
+  <div class="wrap">
+    <div class="seclabel">Our journey</div>
+    <h2>From idea to a <span class="em">pilot-ready</span> product, fast.</h2>
+    <div class="tl">
+      <div class="row"><div class="when mono">2026 · FEB</div><div class="what">Company founded<span>Bhavira Technologies incorporated in Victoria, Australia.</span></div></div>
+      <div class="row"><div class="when mono">EARLY 2026</div><div class="what">RMIT Activator<span>Completed the startup incubator program.</span></div></div>
+      <div class="row"><div class="when mono">2026</div><div class="what">CSIRO grant<span>Awarded an international delegation grant — funded a week in the USA.</span></div></div>
+      <div class="row"><div class="when mono">2026</div><div class="what">Government advisory<span>Completed the Industry Growth Program Advisory Service.</span></div></div>
+      <div class="row"><div class="when mono">NOW</div><div class="what">Product ready &amp; patent filed<span>The electrode is built, lab-proven, and protected by a filed patent.</span></div></div>
+      <div class="row live"><div class="when mono">NOW</div><div class="what">Pilot conversations<span>In active discussions with industry to validate the electrode at scale.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="band closing" id="contact">
+  <div class="wrap">
+    <div class="seclabel" style="justify-content:center">Get in touch</div>
+    <h2>Recovering metal that would <span class="em">otherwise be lost</span>.</h2>
+    <p class="lead">For partnership, pilot, or investment enquiries — we'd be glad to talk.</p>
+    <div class="hero-cta">
+      <a href="mailto:Bhaviratech@gmail.com" class="btn solid">Email us</a>
+      <a href="#tech" class="btn">Back to top</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div class="col">
+      <b>BHAVIRA TECHNOLOGIES PTY LTD</b>
+      <div>Low-cost electrodes for metal recovery</div>
+      <div>Victoria, Australia · ACN 695 089 822</div>
+    </div>
+    <div class="col">
+      <b>EXPLORE</b>
+      <div><a href="#tech">Technology</a></div>
+      <div><a href="#proof">Proof</a></div>
+      <div><a href="#journey">Journey</a></div>
+    </div>
+    <div class="col">
+      <b>CONTACT</b>
+      <div><a href="mailto:Bhaviratech@gmail.com">Bhaviratech@gmail.com</a></div>
+      <div>Victoria, Australia</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---- crystal nucleation hero: hexagonal zinc-like crystals grow on an electrode ----
+(function(){
+  const c=document.getElementById('cryst'), x=c.getContext('2d');
+  let W,Hh,dpr,crystals=[],t=0,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function size(){
+    dpr=Math.min(devicePixelRatio||1,2);
+    W=c.width=innerWidth*dpr; Hh=c.height=c.offsetHeight*dpr;
+  }
+  size(); addEventListener('resize',size);
+
+  function hex(cx,cy,r,rot,fill,stroke,a){
+    x.beginPath();
+    for(let i=0;i<6;i++){const ang=rot+i*Math.PI/3;
+      const px=cx+Math.cos(ang)*r, py=cy+Math.sin(ang)*r;
+      i?x.lineTo(px,py):x.moveTo(px,py);}
+    x.closePath();
+    if(fill){x.fillStyle=fill;x.globalAlpha=a;x.fill();}
+    if(stroke){x.strokeStyle=stroke;x.globalAlpha=a*1.2;x.lineWidth=1*dpr;x.stroke();}
+    x.globalAlpha=1;
+  }
+  function seed(){
+    crystals=[];
+    const n = innerWidth<680?13:26;
+    for(let i=0;i<n;i++){
+      crystals.push({
+        x:Math.random()*W, y:Math.random()*Hh,
+        max:(18+Math.random()*54)*dpr, r:0,
+        rot:Math.random()*Math.PI, grow:0.15+Math.random()*0.5,
+        delay:Math.random()*220, tone:Math.random(),
+      });
+    }
+  }
+  seed();
+
+  function draw(){
+    x.clearRect(0,0,W,Hh);
+    // faint electrode gradient base
+    const g=x.createLinearGradient(0,0,W,Hh);
+    g.addColorStop(0,'#1a1712'); g.addColorStop(1,'#100e0b');
+    x.fillStyle=g; x.fillRect(0,0,W,Hh);
+
+    t+=1;
+    crystals.forEach(cr=>{
+      if(t<cr.delay) return;
+      if(cr.r<cr.max) cr.r+=cr.grow*dpr;
+      // metallic tone: zinc grey to warm copper
+      const warm = cr.tone>0.7;
+      const fill = warm ? 'rgba(176,106,62,0.16)' : 'rgba(200,205,212,0.12)';
+      const stroke = warm ? 'rgba(212,137,92,0.5)' : 'rgba(232,236,241,0.4)';
+      // concentric hex growth rings (layer-by-layer deposit, like real zinc)
+      const rings=3;
+      for(let k=rings;k>=1;k--){
+        const rr=cr.r*(k/rings);
+        hex(cr.x,cr.y,rr,cr.rot,k===rings?fill:null,stroke,0.5*(k/rings)+0.15);
+      }
+      // bright nucleus
+      if(cr.r>2){
+        x.beginPath();x.arc(cr.x,cr.y,1.6*dpr,0,7);
+        x.fillStyle= warm?'#d4895c':'#e8ecf1'; x.globalAlpha=0.7; x.fill(); x.globalAlpha=1;
+      }
+    });
+
+    // occasional "current" spark line between two near crystals
+    if(!reduced && t%6===0){
+      for(let i=0;i<2;i++){
+        const a=crystals[Math.floor(Math.random()*crystals.length)];
+        const b=crystals[Math.floor(Math.random()*crystals.length)];
+        if(a&&b&&a!==b){
+          const d=Math.hypot(a.x-b.x,a.y-b.y);
+          if(d<160*dpr && a.r>4 && b.r>4){
+            x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);
+            x.strokeStyle='rgba(158,240,26,0.10)';x.lineWidth=1*dpr;x.stroke();
+          }
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  if(reduced){
+    // static frame: grow all to full once
+    crystals.forEach(cr=>cr.r=cr.max); t=99999;
+    x.clearRect(0,0,W,Hh);
+    const g=x.createLinearGradient(0,0,W,Hh);g.addColorStop(0,'#1a1712');g.addColorStop(1,'#100e0b');
+    x.fillStyle=g;x.fillRect(0,0,W,Hh);
+    crystals.forEach(cr=>{
+      const warm=cr.tone>0.7;
+      hex(cr.x,cr.y,cr.r,cr.rot,warm?'rgba(176,106,62,0.16)':'rgba(200,205,212,0.12)',
+        warm?'rgba(212,137,92,0.5)':'rgba(232,236,241,0.4)',0.5);
+    });
+  } else {
+    draw();
+  }
+})();
+
+// ---- scroll reveal for bands ----
+(function(){
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity=1; e.target.style.transform='none'; } });
+  },{threshold:0.08});
+  document.querySelectorAll('section.band .wrap').forEach(el=>{
+    if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+    el.style.opacity=0; el.style.transform='translateY(24px)';
+    el.style.transition='opacity .8s ease, transform .8s ease';
+    io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
